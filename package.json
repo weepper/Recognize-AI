@@ -1,5 +1,5 @@
 {
-  "name": "recognize-ai-backend",
+  "name": "recognize-ai",
   "version": "1.0.0",
   "description": "Admin settings frontend for Nextcloud Recognize AI Backend ExApp",
   "private": true,
