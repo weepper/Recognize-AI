@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+
+# ONNX models (large binaries — download via download_models.py)
+models/*.onnx
+
+# PyTorch checkpoints (intermediate export artifacts)
+*.pt
+*.pth
+
+# HuggingFace / CLIP export intermediates
+clip_export/
+clip_export_api/
+
+# Environment
+.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node.js / Frontend build
+node_modules/

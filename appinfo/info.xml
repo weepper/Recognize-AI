@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<info xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="https://apps.nextcloud.com/schema/apps/info.xsd">
+    <id>recognize_ai</id>
+    <name>Recognize AI</name>
+    <summary>High-performance Python + ONNX Runtime AI backend for Nextcloud media classification</summary>
+    <description><![CDATA[
+**Recognize AI** is a blazing-fast AI microservice providing:
+
+- 🎯 **Object Detection** — YOLOv8n (80 COCO classes)
+- 👤 **Facial Recognition** — ArcFace (512-d embeddings)
+- 🔍 **Semantic Search** — CLIP ViT-B/32 (text-to-image queries)
+
+Runs as a containerized ExApp with automatic GPU acceleration via ONNX Runtime.
+Includes an admin panel for model monitoring, GPU status, and a configurable
+background file scanner for automatic media classification.
+    ]]></description>
+    <version>1.0.0</version>
+    <licence>agpl</licence>
+    <author>pener</author>
+    <category>multimedia</category>
+
+    <dependencies>
+        <nextcloud min-version="30" max-version="32" />
+    </dependencies>
+
+    <settings>
+        <admin>OCA\RecognizeAI\Settings\Admin</admin>
+        <admin-section>OCA\RecognizeAI\Settings\AdminSection</admin-section>
+    </settings>
+
+    <external-app>
+        <docker-install>
+            <registry>ghcr.io</registry>
+            <image>pener/recognize-ai-backend</image>
+            <image-tag>latest</image-tag>
+        </docker-install>
+    </external-app>
+</info>

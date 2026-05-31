@@ -1,0 +1,82 @@
+# =============================================================================
+# Recognize AI Backend — Docker Build & Push
+#
+# Triggers:
+#   - Push to main  → ghcr.io/pener/recognize-ai-backend:latest
+#   - Push tag v*   → ghcr.io/pener/recognize-ai-backend:<version>
+#
+# Builds multi-platform images for linux/amd64 and linux/arm64.
+# =============================================================================
+
+name: Build and Push Docker Image
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - "v*"
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: pener/recognize-ai-backend
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      # -----------------------------------------------------------------------
+      # 1. Checkout repository
+      # -----------------------------------------------------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # -----------------------------------------------------------------------
+      # 2. Authenticate with GitHub Container Registry
+      # -----------------------------------------------------------------------
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # -----------------------------------------------------------------------
+      # 3. Set up Docker Buildx for multi-platform builds
+      # -----------------------------------------------------------------------
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # -----------------------------------------------------------------------
+      # 4. Extract metadata (tags, labels) for the Docker image
+      # -----------------------------------------------------------------------
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            # Tag "latest" on push to main
+            type=raw,value=latest,enable={{is_default_branch}}
+            # Tag with version on v* tags (e.g., v1.0.0 → 1.0.0)
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+
+      # -----------------------------------------------------------------------
+      # 5. Build and push multi-platform Docker image
+      # -----------------------------------------------------------------------
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          platforms: linux/amd64,linux/arm64
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

@@ -1,0 +1,11 @@
+# Development & model export dependencies
+# Install with: pip install -r requirements-dev.txt
+
+-r requirements.txt
+
+# Model export tools
+ultralytics>=8.1.0
+optimum[onnxruntime]>=1.17.0
+
+# Test client
+requests>=2.31.0

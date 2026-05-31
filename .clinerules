@@ -1,0 +1,35 @@
+# Cline/Roo-Code Rules — Recognize AI Backend
+
+## About This Project
+FastAPI + ONNX Runtime inference microservice for Nextcloud Recognize. Three ML models: YOLOv8n (objects), ArcFace (faces), CLIP (semantic embeddings).
+
+## Before You Start
+Read `ai_instructions.md` in the project root. It contains:
+- Exact preprocessing math for each model (letterboxing, normalization constants, input shapes)
+- Error handling hierarchy and concurrency model
+- Step-by-step guide for adding new model endpoints
+
+## Hard Constraints
+- **Runtime deps only**: Pillow, numpy, onnxruntime. No PyTorch/TF/transformers in inference code.
+- **All constants in config.py**: Input sizes, thresholds, normalization mean/std — never inline.
+- **Sync endpoints**: `/analyze/*` routes must be plain `def` for automatic threadpooling.
+- **ModelManager**: Every model goes through `utils.ModelManager`. Register name in `config.MODEL_NAMES`.
+- **Logging only**: `logging.getLogger(__name__)` — no `print()` statements.
+- **Graceful degradation**: If a model isn't loaded, return `[]` from inference, `503` from endpoint.
+
+## File Layout
+```
+config.py       → Constants & env vars
+main.py         → FastAPI app & endpoints
+inference.py    → Preprocessing + ONNX inference + postprocessing
+utils.py        → ModelManager singleton + ONNX session factory
+download_models.py → Model downloader/exporter (YOLO, ArcFace, CLIP)
+```
+
+## ExApp Conventions
+- **Dual-mode**: Runs standalone (`python main.py`) or as Nextcloud ExApp (managed by AppAPI when `APP_ID`/`APP_SECRET` are set).
+- **nc-py-api lifecycle**: `nc_app.py` registers routes with Nextcloud via `nc-py-api`. Keep nc-py-api imports isolated to this file.
+- **Frontend**: Vue.js admin settings panel in `src/`, built with webpack. Follows Nextcloud Vue patterns.
+- **Scanner**: `scanner.py` for background file processing — fetches unscanned media from Nextcloud in batches.
+- **Manifest**: `appinfo/info.xml` declares ExApp ID, version, Docker image, and admin settings classes.
+

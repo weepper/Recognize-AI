@@ -1,0 +1,28 @@
+# Cursor Rules — Recognize AI Backend
+
+## Project Overview
+This is a FastAPI + ONNX Runtime AI microservice for Nextcloud Recognize. It serves YOLOv8n (object detection), ArcFace (face embeddings), and CLIP (semantic search) models.
+
+## Key Files
+- `main.py` — FastAPI routes and request validation
+- `inference.py` — Image preprocessing, ONNX session execution, and postprocessing
+- `utils.py` — ModelManager singleton for lazy ONNX session management
+- `config.py` — All constants, thresholds, model names, and environment variable bindings
+- `ai_instructions.md` — **Read this first** for detailed architecture and conventions
+
+## Critical Rules
+1. **Read `ai_instructions.md`** before making any changes to understand preprocessing math, error patterns, and concurrency model.
+2. **No heavy dependencies**: Only Pillow, numpy, and onnxruntime are allowed in inference code. No PyTorch, TensorFlow, torchvision, or transformers.
+3. **Constants in config.py**: All model parameters (input sizes, thresholds, normalization values) must live in `config.py`, never hardcoded in `inference.py`.
+4. **Sync endpoints**: Analysis endpoints (`/analyze/*`) must be `def`, not `async def`, so FastAPI auto-threadpools them. Only GET endpoints may be async.
+5. **ModelManager pattern**: All new models must be registered in `MODEL_NAMES` in config.py and loaded through the `ModelManager` singleton in utils.py.
+6. **Logging**: Use `logging.getLogger(__name__)` — never `print()`.
+7. **Error handling**: Inference functions return `[]` on failure. Endpoints catch exceptions and return proper HTTP error codes (503/500/422/413).
+
+## ExApp Conventions
+- **Dual-mode operation**: The backend runs standalone (`python main.py`) or as a Nextcloud ExApp. ExApp mode activates when `APP_ID` and `APP_SECRET` env vars are present.
+- **nc-py-api lifecycle**: `nc_app.py` uses `nc-py-api` to register routes with Nextcloud. Do not import nc-py-api in other modules.
+- **Vue.js frontend**: Admin settings panel lives in `src/`, built with webpack. Follow Nextcloud Vue component patterns.
+- **Scanner**: `scanner.py` handles background file processing. It fetches unscanned files from Nextcloud in batches.
+- **Manifest**: `appinfo/info.xml` is the ExApp manifest. Keep `<version>` in sync with git tags.
+
